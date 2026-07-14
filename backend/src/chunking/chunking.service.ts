@@ -3,66 +3,93 @@ import { Injectable } from '@nestjs/common';
 export interface Chunk {
   content: string;
   index: number;
+  position: number;
+  pageNumber?: number;
 }
 
 @Injectable()
 export class ChunkingService {
-  private readonly CHUNK_SIZE = 500;
-  private readonly CHUNK_OVERLAP = 50;
+  private readonly CHUNK_SIZE = 800;
+  private readonly CHUNK_OVERLAP = 150;
 
-  chunkText(text: string): Chunk[] {
+  chunkText(text: string, pageNumber?: number): Chunk[] {
+    const normalizedText = this.normalizeText(text);
+    const sentences = this.splitIntoSentences(normalizedText);
+
     const chunks: Chunk[] = [];
-    const sentences = this.splitIntoSentences(text);
-    
     let currentChunk = '';
     let chunkIndex = 0;
+    let position = 0;
 
     for (const sentence of sentences) {
-      if (currentChunk.length + sentence.length > this.CHUNK_SIZE) {
-        if (currentChunk.length > 0) {
-          chunks.push({
-            content: currentChunk.trim(),
-            index: chunkIndex++,
-          });
-          currentChunk = '';
-        }
+      const candidate = currentChunk ? `${currentChunk} ${sentence}` : sentence;
+
+      if (candidate.length > this.CHUNK_SIZE && currentChunk.length > 0) {
+        chunks.push(this.buildChunk(currentChunk.trim(), chunkIndex++, position, pageNumber));
+        position += currentChunk.length;
+        currentChunk = sentence;
+        continue;
       }
-      currentChunk += sentence + ' ';
+
+      currentChunk = candidate;
     }
 
     if (currentChunk.trim().length > 0) {
-      chunks.push({
-        content: currentChunk.trim(),
-        index: chunkIndex,
-      });
+      chunks.push(this.buildChunk(currentChunk.trim(), chunkIndex, position, pageNumber));
     }
 
     return this.addOverlap(chunks);
   }
 
+  private buildChunk(content: string, index: number, position: number, pageNumber?: number): Chunk {
+    return {
+      content,
+      index,
+      position,
+      pageNumber,
+    };
+  }
+
+  private normalizeText(text: string): string {
+    return text.replace(/\s+/g, ' ').trim();
+  }
+
   private splitIntoSentences(text: string): string[] {
-    const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
-    return sentences.map((s) => s.trim()).filter((s) => s.length > 0);
+    const sentencePattern = /[^.!?]+[.!?]+(?:\s|$)/g;
+    const matches = text.matchAll(sentencePattern);
+    const sentences = Array.from(matches, (match) => match[0].trim()).filter(Boolean);
+
+    if (sentences.length === 0) {
+      return text.length > 0 ? [text] : [];
+    }
+
+    const remainder = text.replace(sentencePattern, '').trim();
+    if (remainder) {
+      sentences.push(remainder);
+    }
+
+    return sentences;
   }
 
   private addOverlap(chunks: Chunk[]): Chunk[] {
-    const overlappedChunks: Chunk[] = [];
-    
-    for (let i = 0; i < chunks.length; i++) {
-      let content = chunks[i].content;
-      
-      if (i > 0) {
-        const previousChunk = chunks[i - 1].content;
-        const overlapText = previousChunk.slice(-this.CHUNK_OVERLAP);
-        content = overlapText + ' ' + content;
-      }
-      
-      overlappedChunks.push({
-        content: content.trim(),
-        index: i,
-      });
+    if (chunks.length <= 1) {
+      return chunks;
     }
-    
-    return overlappedChunks;
+
+    return chunks.map((chunk, index) => {
+      if (index === 0) {
+        return chunk;
+      }
+
+      const previousChunk = chunks[index - 1].content;
+      const overlapContent = previousChunk.slice(-this.CHUNK_OVERLAP).trim();
+      const combinedContent = overlapContent ? `${overlapContent} ${chunk.content}` : chunk.content;
+
+      return {
+        ...chunk,
+        content: combinedContent.trim(),
+        position: chunk.position - this.CHUNK_OVERLAP,
+      };
+    });
   }
 }
