@@ -1,0 +1,26 @@
+export default () => ({
+  port: parseInt(process.env.PORT ?? '3001', 10),
+  database: {
+    url: process.env.DATABASE_URL,
+  },
+  jwt: {
+    secret: process.env.JWT_SECRET || 'your-secret-key',
+    expiresIn: process.env.JWT_EXPIRES_IN || '7d',
+  },
+  aws: {
+    region: process.env.AWS_REGION ?? 'us-east-1',
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? '',
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? '',
+    s3: {
+      bucket: process.env.AWS_S3_BUCKET ?? '',
+    },
+    bedrock: {
+      region: process.env.AWS_BEDROCK_REGION ?? 'us-east-1',
+    },
+    opensearch: {
+      endpoint: process.env.OPENSEARCH_ENDPOINT ?? '',
+      username: process.env.OPENSEARCH_USERNAME ?? '',
+      password: process.env.OPENSEARCH_PASSWORD ?? '',
+    },
+  },
+});
