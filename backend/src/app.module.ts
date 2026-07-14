@@ -7,6 +7,8 @@ import { AuthModule } from './auth/auth.module';
 import { StorageModule } from './storage/storage.module';
 import { DocumentsModule } from './documents/documents.module';
 import { EmbeddingsModule } from './embeddings/embeddings.module';
+import { UploadModule } from './upload/upload.module';
+import { PdfModule } from './pdf/pdf.module';
 import { ChunkingModule } from './chunking/chunking.module';
 import { IndexingModule } from './indexing/indexing.module';
 import { RetrievalModule } from './retrieval/retrieval.module';
@@ -28,6 +30,8 @@ import { validate } from './config/env.validation';
     StorageModule,
     DocumentsModule,
     EmbeddingsModule,
+    UploadModule,
+    PdfModule,
     ChunkingModule,
     IndexingModule,
     RetrievalModule,

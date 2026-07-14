@@ -34,13 +34,16 @@ export class EnvironmentVariables {
   AWS_BEDROCK_REGION?: string;
 
   @IsString()
-  OPENSEARCH_ENDPOINT: string;
+  OPENSEARCH_NODE: string;
 
   @IsString()
   OPENSEARCH_USERNAME: string;
 
   @IsString()
   OPENSEARCH_PASSWORD: string;
+
+  @IsString()
+  OPENSEARCH_INDEX: string;
 }
 
 export function validate(config: Record<string, unknown>) {

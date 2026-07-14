@@ -11,16 +11,20 @@ import { S3_CLIENT, BEDROCK_RUNTIME_CLIENT, OPENSEARCH_CLIENT } from './aws.cons
     {
       provide: S3_CLIENT,
       useFactory: (configService: ConfigService) => {
-        const region = configService.get<string>('aws.region') ?? 'us-east-1';
+        const region = configService.getOrThrow<string>('aws.region');
         const accessKeyId = configService.get<string>('aws.accessKeyId');
         const secretAccessKey = configService.get<string>('aws.secretAccessKey');
 
         return new S3Client({
           region,
-          credentials: {
-            accessKeyId: accessKeyId ?? '',
-            secretAccessKey: secretAccessKey ?? '',
-          },
+          ...(accessKeyId && secretAccessKey
+            ? {
+                credentials: {
+                  accessKeyId,
+                  secretAccessKey,
+                },
+              }
+            : {}),
         });
       },
       inject: [ConfigService],
@@ -28,16 +32,20 @@ import { S3_CLIENT, BEDROCK_RUNTIME_CLIENT, OPENSEARCH_CLIENT } from './aws.cons
     {
       provide: BEDROCK_RUNTIME_CLIENT,
       useFactory: (configService: ConfigService) => {
-        const region = configService.get<string>('aws.bedrock.region') ?? 'us-east-1';
+        const region = configService.getOrThrow<string>('aws.bedrock.region');
         const accessKeyId = configService.get<string>('aws.accessKeyId');
         const secretAccessKey = configService.get<string>('aws.secretAccessKey');
 
         return new BedrockRuntimeClient({
           region,
-          credentials: {
-            accessKeyId: accessKeyId ?? '',
-            secretAccessKey: secretAccessKey ?? '',
-          },
+          ...(accessKeyId && secretAccessKey
+            ? {
+                credentials: {
+                  accessKeyId,
+                  secretAccessKey,
+                },
+              }
+            : {}),
         });
       },
       inject: [ConfigService],
@@ -45,15 +53,18 @@ import { S3_CLIENT, BEDROCK_RUNTIME_CLIENT, OPENSEARCH_CLIENT } from './aws.cons
     {
       provide: OPENSEARCH_CLIENT,
       useFactory: (configService: ConfigService) => {
-        const endpoint = configService.get<string>('aws.opensearch.endpoint') ?? '';
-        const username = configService.get<string>('aws.opensearch.username') ?? '';
-        const password = configService.get<string>('aws.opensearch.password') ?? '';
+        const node = configService.getOrThrow<string>('opensearch.node');
+        const username = configService.getOrThrow<string>('opensearch.username');
+        const password = configService.getOrThrow<string>('opensearch.password');
 
         return new OpenSearchClient({
-          node: endpoint,
+          node,
           auth: {
             username,
             password,
+          },
+          ssl: {
+            rejectUnauthorized: false,
           },
         });
       },

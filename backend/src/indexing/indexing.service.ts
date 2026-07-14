@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { EmbeddingsService } from '../embeddings/embeddings.service';
 import { ChunkingService } from '../chunking/chunking.service';
-import { OpenSearchService } from './opensearch.service';
+import { OpenSearchService } from '../opensearch/opensearch.service';
 import { DocumentStatus } from '@prisma/client';
 
 @Injectable()

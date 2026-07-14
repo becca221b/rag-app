@@ -7,6 +7,12 @@ export default () => ({
     secret: process.env.JWT_SECRET || 'your-secret-key',
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',
   },
+  opensearch: {
+    node: process.env.OPENSEARCH_NODE ?? '',
+    username: process.env.OPENSEARCH_USERNAME ?? '',
+    password: process.env.OPENSEARCH_PASSWORD ?? '',
+    index: process.env.OPENSEARCH_INDEX ?? 'document-chunks',
+  },
   aws: {
     region: process.env.AWS_REGION ?? 'us-east-1',
     accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? '',
@@ -18,9 +24,10 @@ export default () => ({
       region: process.env.AWS_BEDROCK_REGION ?? 'us-east-1',
     },
     opensearch: {
-      endpoint: process.env.OPENSEARCH_ENDPOINT ?? '',
+      node: process.env.OPENSEARCH_NODE ?? '',
       username: process.env.OPENSEARCH_USERNAME ?? '',
       password: process.env.OPENSEARCH_PASSWORD ?? '',
+      index: process.env.OPENSEARCH_INDEX ?? 'document-chunks',
     },
   },
 });
