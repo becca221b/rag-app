@@ -1,54 +1,57 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Injectable, Logger } from '@nestjs/common';
 import { EmbeddingsService } from '../embeddings/embeddings.service';
-import { Client } from '@opensearch-project/opensearch';
+import { OpenSearchService } from '../opensearch/opensearch.service';
+
+export interface RetrievedChunk {
+  id: string;
+  content: string;
+  chunkIndex: number;
+  documentId: string;
+  score?: number;
+}
 
 @Injectable()
 export class RetrievalService {
-  private readonly client: Client;
-  private readonly indexName = 'document-chunks';
+  private readonly logger = new Logger(RetrievalService.name);
 
   constructor(
-    private configService: ConfigService,
-    private embeddingsService: EmbeddingsService,
-  ) {
-    const endpoint = this.configService.get<string>('aws.opensearch.endpoint') || '';
-    const username = this.configService.get<string>('aws.opensearch.username') || '';
-    const password = this.configService.get<string>('aws.opensearch.password') || '';
+    private readonly embeddingsService: EmbeddingsService,
+    private readonly openSearchService: OpenSearchService,
+  ) {}
 
-    this.client = new Client({
-      node: endpoint,
-      auth: {
-        username,
-        password,
-      },
-    });
-  }
-
-  async retrieveRelevantChunks(query: string, k: number = 5): Promise<any[]> {
+  async retrieveRelevantChunks(query: string, k: number = 5): Promise<RetrievedChunk[]> {
     const embedding = await this.embeddingsService.generateEmbedding(query);
+    const hits = await this.openSearchService.searchSimilarChunks(embedding, k);
 
-    const response = await this.client.search({
-      index: this.indexName,
-      body: {
-        size: k,
-        query: {
-          knn: {
-            embedding: {
-              vector: embedding,
-              k: k,
-            },
-          },
-        },
-      },
+    const sorted = [...hits].sort((left, right) => {
+      const leftScore = left.score ?? 0;
+      const rightScore = right.score ?? 0;
+      return rightScore - leftScore;
     });
 
-    return response.body.hits.hits.map((hit: any) => ({
-      id: hit._id,
-      content: hit._source.content,
-      chunkIndex: hit._source.chunkIndex,
-      documentId: hit._source.documentId,
-      score: hit._score,
+    this.logger.log(`Retrieved ${sorted.length} chunks for query`);
+
+    return sorted.map((hit) => ({
+      id: hit.id,
+      content: hit.content,
+      chunkIndex: hit.chunkIndex,
+      documentId: hit.documentId,
+      score: hit.score,
     }));
   }
+
+  async buildContext(query: string, k: number = 5): Promise<string> {
+    const relevantChunks = await this.retrieveRelevantChunks(query, k);
+
+    if (relevantChunks.length === 0) {
+      return 'No relevant context found.';
+    }
+
+    return relevantChunks
+      .map((chunk, index) => `Context ${index + 1}: ${chunk.content}`)
+      .join('\n\n');
+  }
 }
+
+@Injectable()
+export class SearchService extends RetrievalService {}
