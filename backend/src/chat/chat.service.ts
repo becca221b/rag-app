@@ -14,7 +14,7 @@ export class ChatService {
 
   async query(userId: string, query: string, sessionId?: string) {
     const relevantChunks = await this.retrievalService.retrieveRelevantChunks(query, 5);
-    const context = relevantChunks.map((chunk) => chunk.content);
+    const context = relevantChunks.map((chunk) => String(chunk.content ?? ''));
 
     const response = await this.generationService.generateResponse(query, context);
 
@@ -46,7 +46,15 @@ export class ChatService {
           chatSessionId: session.id,
           role: MessageRole.ASSISTANT,
           content: response,
-          sources: relevantChunks,
+          sources: {
+            chunks: relevantChunks.map((chunk) => ({
+              id: String(chunk.id ?? ''),
+              content: String(chunk.content ?? ''),
+              documentId: String(chunk.documentId ?? ''),
+              chunkIndex: Number(chunk.chunkIndex ?? 0),
+              score: Number(chunk.score ?? 0),
+            })),
+          },
         },
       ],
     });
