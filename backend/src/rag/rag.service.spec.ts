@@ -4,7 +4,7 @@ import { RagService } from './rag.service';
 describe('RagService', () => {
   it('orchestrates embedding, retrieval, and generation', async () => {
     const embeddingsService = {
-      generateEmbedding: jest.fn(async () => [0.1, 0.2, 0.3]),
+      generateEmbedding: jest.fn(async () => [0.1, 0.2, 0.3]) as jest.Mock,
     };
 
     const retrievalService = {
@@ -16,11 +16,11 @@ describe('RagService', () => {
           chunkIndex: 0,
           score: 0.99,
         },
-      ]),
+      ]) as jest.Mock,
     };
 
     const generationService = {
-      generateResponse: jest.fn(async () => 'Answer from context'),
+      generateResponse: jest.fn(async () => 'Answer from context') as jest.Mock,
     };
 
     const service = new RagService(
