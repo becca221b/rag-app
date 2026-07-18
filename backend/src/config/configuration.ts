@@ -4,7 +4,7 @@ export default () => ({
     url: process.env.DATABASE_URL,
   },
   jwt: {
-    secret: process.env.JWT_SECRET || 'your-secret-key',
+    secret: process.env.JWT_SECRET,
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',
   },
   opensearch: {
@@ -12,6 +12,7 @@ export default () => ({
     username: process.env.OPENSEARCH_USERNAME ?? '',
     password: process.env.OPENSEARCH_PASSWORD ?? '',
     index: process.env.OPENSEARCH_INDEX ?? 'document-chunks',
+    rejectUnauthorized: process.env.OPENSEARCH_REJECT_UNAUTHORIZED ?? 'true',
   },
   aws: {
     region: process.env.AWS_REGION ?? 'us-east-1',

@@ -5,6 +5,12 @@ import { BedrockRuntimeClient } from '@aws-sdk/client-bedrock-runtime';
 import { Client as OpenSearchClient } from '@opensearch-project/opensearch';
 import { S3_CLIENT, BEDROCK_RUNTIME_CLIENT, OPENSEARCH_CLIENT } from './aws.constants';
 
+function parseBoolean(value: unknown, fallback: boolean): boolean {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'string') return value.toLowerCase() !== 'false';
+  return fallback;
+}
+
 @Global()
 @Module({
   providers: [
@@ -56,6 +62,7 @@ import { S3_CLIENT, BEDROCK_RUNTIME_CLIENT, OPENSEARCH_CLIENT } from './aws.cons
         const node = configService.getOrThrow<string>('opensearch.node');
         const username = configService.getOrThrow<string>('opensearch.username');
         const password = configService.getOrThrow<string>('opensearch.password');
+        const rejectUnauthorized = configService.get<boolean>('opensearch.rejectUnauthorized') ?? true;
 
         return new OpenSearchClient({
           node,
@@ -64,7 +71,7 @@ import { S3_CLIENT, BEDROCK_RUNTIME_CLIENT, OPENSEARCH_CLIENT } from './aws.cons
             password,
           },
           ssl: {
-            rejectUnauthorized: false,
+            rejectUnauthorized,
           },
         });
       },

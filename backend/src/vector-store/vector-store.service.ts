@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Client } from '@opensearch-project/opensearch';
 import { Inject } from '@nestjs/common';
@@ -86,7 +86,7 @@ export class VectorStoreService implements OnModuleInit {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(`Failed to initialize vector index ${this.indexName}`, message);
-      throw error;
+      throw new InternalServerErrorException(`Unable to initialize vector index ${this.indexName}: ${message}`);
     }
   }
 
@@ -108,7 +108,7 @@ export class VectorStoreService implements OnModuleInit {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(`Failed to save embedding for chunk ${document.id}`, message);
-      throw new Error(`Unable to save embedding: ${message}`);
+      throw new InternalServerErrorException(`Unable to save embedding: ${message}`);
     }
   }
 
@@ -140,7 +140,7 @@ export class VectorStoreService implements OnModuleInit {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error('Failed to search similar embeddings', message);
-      throw new Error(`Unable to search similar embeddings: ${message}`);
+      throw new InternalServerErrorException(`Unable to search similar embeddings: ${message}`);
     }
   }
 }

@@ -58,21 +58,21 @@ export class IndexingService {
 
       this.logger.log(`Document ${documentId} indexed successfully`);
     } catch (error) {
-  const message =
-    error instanceof Error ? error.message : String(error);
+      const message = error instanceof Error ? error.message : String(error);
 
-  this.logger.error(message);
+      this.logger.error(message);
 
-  await this.prisma.document.update({
-    where: { id: documentId },
-    data: {
-      status: DocumentStatus.ERROR,
-      error: message,
-    },
-  });
+      await this.prisma.document.update({
+        where: { id: documentId },
+        data: {
+          status: DocumentStatus.ERROR,
+          error: message,
+        },
+      });
 
-  throw error;
-  }}
+      throw error;
+    }
+  }
 
   async deleteDocumentChunks(documentId: string) {
     const chunks = await this.prisma.chunk.findMany({

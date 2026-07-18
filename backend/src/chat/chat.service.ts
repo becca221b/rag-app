@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { RetrievalService } from '../retrieval/retrieval.service';
 import { GenerationService } from '../generation/generation.service';
@@ -24,7 +24,7 @@ export class ChatService {
         where: { id: sessionId },
       });
       if (!session || session.userId !== userId) {
-        throw new Error('Invalid session');
+        throw new NotFoundException('Session not found');
       }
     } else {
       session = await this.prisma.chatSession.create({
@@ -102,7 +102,7 @@ export class ChatService {
     });
 
     if (!session || session.userId !== userId) {
-      throw new Error('Session not found');
+      throw new NotFoundException('Session not found');
     }
 
     return session;

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { DocumentStatus } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service';
 import { PdfService } from '../pdf/pdf.service';
@@ -30,7 +30,7 @@ export class DocumentIndexerService {
       });
 
       if (!document) {
-        throw new Error('Document not found');
+        throw new NotFoundException('Document not found');
       }
 
       const extraction = await this.pdfService.extractTextFromS3(document.s3Key, document.filename);

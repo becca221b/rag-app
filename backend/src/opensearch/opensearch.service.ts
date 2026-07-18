@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Client } from '@opensearch-project/opensearch';
 import { OPENSEARCH_CLIENT, IndexChunkPayload, OpenSearchSearchHit } from './opensearch.types';
@@ -32,7 +32,7 @@ export class OpenSearchService {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(`Failed to index chunk ${payload.id}`, message);
-      throw new Error(`Unable to index chunk ${payload.id}: ${message}`);
+      throw new InternalServerErrorException(`Unable to index chunk ${payload.id}: ${message}`);
     }
   }
 
@@ -47,7 +47,7 @@ export class OpenSearchService {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(`Failed to delete chunk ${id}`, message);
-      throw new Error(`Unable to delete chunk ${id}: ${message}`);
+      throw new InternalServerErrorException(`Unable to delete chunk ${id}: ${message}`);
     }
   }
 
@@ -78,7 +78,7 @@ export class OpenSearchService {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error('Failed to search similar chunks', message);
-      throw new Error(`Unable to search similar chunks: ${message}`);
+      throw new InternalServerErrorException(`Unable to search similar chunks: ${message}`);
     }
   }
 }

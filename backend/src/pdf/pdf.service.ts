@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { Inject } from '@nestjs/common';
 import { S3_CLIENT } from '../aws/aws.constants';
@@ -38,7 +38,7 @@ export class PdfService {
       const body = response.Body;
 
       if (!body) {
-        throw new Error('S3 object body is empty');
+        throw new InternalServerErrorException('S3 object body is empty');
       }
 
       const pdfBuffer = Buffer.isBuffer(body)
