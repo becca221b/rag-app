@@ -7,7 +7,11 @@ import type {
 } from "./types"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? ""
-const USE_MOCK = API_URL === ""
+const USE_MOCK = process.env.NODE_ENV === "development" && !API_URL
+
+if (!API_URL && process.env.NODE_ENV !== "development") {
+  throw new Error("NEXT_PUBLIC_API_URL is required in production mode")
+}
 
 export class ApiError extends Error {
   status: number
@@ -47,8 +51,11 @@ async function withFallback<T>(real: () => Promise<T>, fallback: () => Promise<T
     return await real()
   } catch (err) {
     if (err instanceof ApiError) throw err
-    console.warn("[v0] Backend unreachable, using mock fallback:", (err as Error)?.message)
-    return fallback()
+    if (process.env.NODE_ENV === "development") {
+      console.warn("[v0] Backend unreachable, using mock fallback:", (err as Error)?.message)
+      return fallback()
+    }
+    throw err
   }
 }
 
