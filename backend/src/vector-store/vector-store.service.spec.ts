@@ -42,12 +42,19 @@ describe('VectorStoreService', () => {
       id: 'chunk-1',
       content: 'hello world',
       documentId: 'doc-1',
+      userId: 'user-1',
       chunkIndex: 0,
       embedding: [0.1, 0.2, 0.3],
       metadata: { source: 'pdf' },
     });
 
     const results = await service.searchSimilarEmbeddings([0.1, 0.2, 0.3], 3);
+
+    expect(client.index).toHaveBeenCalledWith(
+      expect.objectContaining({
+        body: expect.objectContaining({ userId: 'user-1' }),
+      }),
+    );
 
     expect(results[0]).toEqual(
       expect.objectContaining({

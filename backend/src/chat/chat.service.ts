@@ -13,7 +13,7 @@ export class ChatService {
   ) {}
 
   async query(userId: string, query: string, sessionId?: string) {
-    const relevantChunks = await this.retrievalService.retrieveRelevantChunks(query, 5);
+    const relevantChunks = await this.retrievalService.retrieveRelevantChunks(query, userId, 5);
     const context = relevantChunks.map((chunk) => String(chunk.content ?? ''));
 
     const response = await this.generationService.generateResponse(query, context);

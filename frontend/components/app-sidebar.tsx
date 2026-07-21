@@ -2,15 +2,11 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { FileText, LogOut, MessagesSquare } from "lucide-react"
+import { LogOut } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { cn, initials } from "@/lib/utils"
+import { navItems } from "@/lib/navigation"
 import { Logo } from "@/components/logo"
-
-const nav = [
-  { href: "/chat", label: "Assistant", icon: MessagesSquare },
-  { href: "/documents", label: "Documents", icon: FileText },
-]
 
 export function AppSidebar() {
   const pathname = usePathname()
@@ -23,7 +19,7 @@ export function AppSidebar() {
       </div>
 
       <nav className="flex flex-1 flex-col gap-1 p-3">
-        {nav.map(({ href, label, icon: Icon }) => {
+        {navItems.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(`${href}/`)
           return (
             <Link

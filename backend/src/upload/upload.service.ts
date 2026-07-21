@@ -7,7 +7,19 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { DocumentStatus } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service';
+import { DocumentIndexerService } from '../indexing/document-indexer.service';
 import { S3Service } from '../storage/s3.service';
+
+export interface UploadedDocumentResponse {
+  id: string;
+  filename: string;
+  originalName: string;
+  mimeType: string;
+  size: number;
+  status: DocumentStatus;
+  createdAt: Date;
+  indexedAt: Date | null;
+}
 
 @Injectable()
 export class UploadService {
@@ -17,20 +29,16 @@ export class UploadService {
     private readonly prisma: PrismaService,
     private readonly s3Service: S3Service,
     private readonly configService: ConfigService,
+    private readonly documentIndexerService: DocumentIndexerService,
   ) {}
 
-  async uploadPdfFiles(userId: string, files: Express.Multer.File[]) {
+  async uploadPdfFiles(
+    userId: string,
+    files: Express.Multer.File[],
+  ): Promise<UploadedDocumentResponse[]> {
     this.validateFiles(files);
 
-    const results = [] as Array<{
-      id: string;
-      filename: string;
-      size: number;
-      bucket: string;
-      key: string;
-      status: DocumentStatus;
-      createdAt: Date;
-    }>;
+    const results: UploadedDocumentResponse[] = [];
 
     const bucket = this.configService.get<string>('aws.s3.bucket') ?? '';
 
@@ -55,12 +63,15 @@ export class UploadService {
         results.push({
           id: document.id,
           filename: document.filename,
+          originalName: document.originalName,
+          mimeType: document.mimeType,
           size: document.size,
-          bucket,
-          key,
           status: document.status,
           createdAt: document.createdAt,
+          indexedAt: document.indexedAt,
         });
+
+        this.startIndexing(document.id, document.filename);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         this.logger.error(`Failed to upload file ${file.originalname}`, message);
@@ -70,10 +81,14 @@ export class UploadService {
       }
     }
 
-    return {
-      uploaded: results.length,
-      files: results,
-    };
+    return results;
+  }
+
+  private startIndexing(documentId: string, filename: string): void {
+    void this.documentIndexerService.indexDocument(documentId).catch((error: unknown) => {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Background indexing failed for ${filename} (${documentId})`, message);
+    });
   }
 
   private validateFiles(files: Express.Multer.File[]) {

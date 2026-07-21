@@ -3,17 +3,13 @@
 import { useEffect } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { FileText, LogOut, MessagesSquare } from "lucide-react"
+import { LogOut } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { cn, initials } from "@/lib/utils"
+import { navItems } from "@/lib/navigation"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Logo } from "@/components/logo"
 import { Spinner } from "@/components/ui/misc"
-
-const nav = [
-  { href: "/chat", label: "Assistant", icon: MessagesSquare },
-  { href: "/documents", label: "Documents", icon: FileText },
-]
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter()
@@ -43,7 +39,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <header className="flex items-center justify-between border-b border-border bg-card px-4 py-3 md:hidden">
           <Logo />
           <div className="flex items-center gap-1">
-            {nav.map(({ href, label, icon: Icon }) => {
+            {navItems.map(({ href, label, icon: Icon }) => {
               const active = pathname === href || pathname.startsWith(`${href}/`)
               return (
                 <Link

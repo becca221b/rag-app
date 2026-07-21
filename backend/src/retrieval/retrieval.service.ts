@@ -7,6 +7,7 @@ export interface RetrievedChunk {
   content: string;
   chunkIndex: number;
   documentId: string;
+  userId: string;
   score?: number;
 }
 
@@ -19,9 +20,9 @@ export class RetrievalService {
     private readonly openSearchService: OpenSearchService,
   ) {}
 
-  async retrieveRelevantChunks(query: string, k: number = 5): Promise<RetrievedChunk[]> {
+  async retrieveRelevantChunks(query: string, userId: string, k: number = 5): Promise<RetrievedChunk[]> {
     const embedding = await this.embeddingsService.generateEmbedding(query);
-    const hits = await this.openSearchService.searchSimilarChunks(embedding, k);
+    const hits = await this.openSearchService.searchSimilarChunks(embedding, k, userId);
 
     const sorted = [...hits].sort((left, right) => {
       const leftScore = left.score ?? 0;
@@ -36,12 +37,13 @@ export class RetrievalService {
       content: hit.content,
       chunkIndex: hit.chunkIndex,
       documentId: hit.documentId,
+      userId: hit.userId,
       score: hit.score,
     }));
   }
 
-  async buildContext(query: string, k: number = 5): Promise<string> {
-    const relevantChunks = await this.retrieveRelevantChunks(query, k);
+  async buildContext(query: string, userId: string, k: number = 5): Promise<string> {
+    const relevantChunks = await this.retrieveRelevantChunks(query, userId, k);
 
     if (relevantChunks.length === 0) {
       return 'No relevant context found.';

@@ -56,6 +56,7 @@ export class DocumentIndexerService {
           id: savedChunk.id,
           content: chunk.content,
           documentId,
+          userId: document.userId,
           chunkIndex: chunk.index,
           embedding,
           metadata: {

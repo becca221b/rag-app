@@ -13,6 +13,7 @@ describe('RagService', () => {
           id: 'chunk-1',
           content: 'Relevant context',
           documentId: 'doc-1',
+          userId: 'user-1',
           chunkIndex: 0,
           score: 0.99,
         },
@@ -29,10 +30,10 @@ describe('RagService', () => {
       generationService as any,
     );
 
-    const result = await service.ask('What is in the document?');
+    const result = await service.ask('What is in the document?', 'user-1');
 
     expect(embeddingsService.generateEmbedding).toHaveBeenCalledWith('What is in the document?');
-    expect(retrievalService.retrieveRelevantChunks).toHaveBeenCalledWith('What is in the document?', 5);
+    expect(retrievalService.retrieveRelevantChunks).toHaveBeenCalledWith('What is in the document?', 'user-1', 5);
     expect(generationService.generateResponse).toHaveBeenCalledWith('What is in the document?', ['Relevant context']);
     expect(result.answer).toBe('Answer from context');
     expect(result.sources[0].documentId).toBe('doc-1');

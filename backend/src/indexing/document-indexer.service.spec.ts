@@ -49,6 +49,9 @@ describe('DocumentIndexerService', () => {
     expect(chunkingService.chunkText).toHaveBeenCalledWith('hello world');
     expect(embeddingsService.generateEmbeddingsBatch).toHaveBeenCalled();
     expect(vectorStoreService.saveEmbedding).toHaveBeenCalled();
+    expect(vectorStoreService.saveEmbedding).toHaveBeenCalledWith(
+      expect.objectContaining({ userId: 'user-1' }),
+    );
     expect(prisma.document.update).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({ status: DocumentStatus.INDEXED }),

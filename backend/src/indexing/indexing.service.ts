@@ -18,6 +18,15 @@ export class IndexingService {
 
   async indexDocument(documentId: string, text: string) {
     try {
+      const document = await this.prisma.document.findUnique({
+        where: { id: documentId },
+        select: { userId: true },
+      });
+
+      if (!document) {
+        throw new Error(`Document ${documentId} not found`);
+      }
+
       await this.prisma.document.update({
         where: { id: documentId },
         data: { status: DocumentStatus.INDEXING },
@@ -30,8 +39,8 @@ export class IndexingService {
         chunks.map((c) => c.content),
       );
 
-      for (let i = 0; i < chunks.length; i++) {
-        const chunk = chunks[i];
+      // Process chunks in parallel for better performance
+      const chunkOperations = chunks.map(async (chunk, i) => {
         const embedding = embeddings[i];
 
         const savedChunk = await this.prisma.chunk.create({
@@ -45,11 +54,16 @@ export class IndexingService {
         await this.openSearchService.indexChunk({
           id: savedChunk.id,
           documentId,
+          userId: document.userId,
           content: chunk.content,
           chunkIndex: chunk.index,
           embedding,
         });
-      }
+
+        return savedChunk;
+      });
+
+      await Promise.all(chunkOperations);
 
       await this.prisma.document.update({
         where: { id: documentId },

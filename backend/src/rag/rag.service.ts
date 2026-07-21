@@ -25,11 +25,11 @@ export class RagService {
     private readonly generationService: GenerationService,
   ) {}
 
-  async ask(question: string, topK: number = 5): Promise<RagQueryResult> {
+  async ask(question: string, userId: string, topK: number = 5): Promise<RagQueryResult> {
     this.logger.log(`Processing RAG question: ${question}`);
 
     const embedding = await this.embeddingsService.generateEmbedding(question);
-    const relevantChunks = await this.retrievalService.retrieveRelevantChunks(question, topK);
+    const relevantChunks = await this.retrievalService.retrieveRelevantChunks(question, userId, topK);
 
     const context = relevantChunks.map((chunk) => String(chunk.content ?? ''));
     const answer = await this.generationService.generateResponse(question, context);

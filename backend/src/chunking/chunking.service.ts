@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 export interface Chunk {
   content: string;
@@ -9,8 +10,13 @@ export interface Chunk {
 
 @Injectable()
 export class ChunkingService {
-  private readonly CHUNK_SIZE = 800;
-  private readonly CHUNK_OVERLAP = 150;
+  private readonly CHUNK_SIZE: number;
+  private readonly CHUNK_OVERLAP: number;
+
+  constructor(private readonly configService: ConfigService) {
+    this.CHUNK_SIZE = this.configService.get<number>('rag.chunkSize') || 800;
+    this.CHUNK_OVERLAP = this.configService.get<number>('rag.chunkOverlap') || 150;
+  }
 
   chunkText(text: string, pageNumber?: number): Chunk[] {
     const normalizedText = this.normalizeText(text);

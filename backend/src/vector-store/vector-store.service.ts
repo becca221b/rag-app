@@ -8,6 +8,7 @@ export interface VectorDocument {
   id: string;
   content: string;
   documentId: string;
+  userId: string;
   chunkIndex: number;
   embedding: number[];
   metadata?: Record<string, unknown>;
@@ -56,6 +57,7 @@ export class VectorStoreService implements OnModuleInit {
             properties: {
               content: { type: 'text' },
               documentId: { type: 'keyword' },
+              userId: { type: 'keyword' },
               chunkIndex: { type: 'integer' },
               embedding: {
                 type: 'knn_vector',
@@ -98,6 +100,7 @@ export class VectorStoreService implements OnModuleInit {
         body: {
           content: document.content,
           documentId: document.documentId,
+          userId: document.userId,
           chunkIndex: document.chunkIndex,
           embedding: document.embedding,
           metadata: document.metadata ?? {},
