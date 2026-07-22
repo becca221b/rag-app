@@ -51,7 +51,9 @@ export class ChatService {
               id: String(chunk.id ?? ''),
               content: String(chunk.content ?? ''),
               documentId: String(chunk.documentId ?? ''),
+              sourceFilename: chunk.sourceFilename,
               chunkIndex: Number(chunk.chunkIndex ?? 0),
+              pageNumber: chunk.pageNumber,
               score: Number(chunk.score ?? 0),
             })),
           },
@@ -62,8 +64,12 @@ export class ChatService {
     return {
       response,
       sources: relevantChunks.map((chunk) => ({
+        id: chunk.id,
         content: chunk.content,
         documentId: chunk.documentId,
+        sourceFilename: chunk.sourceFilename,
+        chunkIndex: chunk.chunkIndex,
+        pageNumber: chunk.pageNumber,
         score: chunk.score,
       })),
       sessionId: session.id,

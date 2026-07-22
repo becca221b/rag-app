@@ -50,4 +50,7 @@ Rules:
     chunkSize: parseInt(process.env.RAG_CHUNK_SIZE ?? '800', 10),
     chunkOverlap: parseInt(process.env.RAG_CHUNK_OVERLAP ?? '150', 10),
   },
+  embeddings: {
+    dimension: parseInt(process.env.EMBEDDING_DIMENSION ?? '1536', 10),
+  },
 });

@@ -30,9 +30,11 @@ export function SourceCard({
         {source.content}
       </p>
 
-      {typeof source.chunkIndex === "number" && (
+      {(typeof source.chunkIndex === "number" || typeof source.pageNumber === "number") && (
         <p className="mt-2 font-mono text-[10px] uppercase tracking-wide text-muted-foreground/70">
-          Chunk #{source.chunkIndex}
+          {typeof source.pageNumber === "number" ? `Page ${source.pageNumber}` : ""}
+          {typeof source.pageNumber === "number" && typeof source.chunkIndex === "number" ? " · " : ""}
+          {typeof source.chunkIndex === "number" ? `Chunk #${source.chunkIndex}` : ""}
         </p>
       )}
     </div>

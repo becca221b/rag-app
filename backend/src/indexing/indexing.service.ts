@@ -20,7 +20,7 @@ export class IndexingService {
     try {
       const document = await this.prisma.document.findUnique({
         where: { id: documentId },
-        select: { userId: true },
+        select: { userId: true, filename: true },
       });
 
       if (!document) {
@@ -39,7 +39,6 @@ export class IndexingService {
         chunks.map((c) => c.content),
       );
 
-      // Process chunks in parallel for better performance
       const chunkOperations = chunks.map(async (chunk, i) => {
         const embedding = embeddings[i];
 
@@ -56,7 +55,9 @@ export class IndexingService {
           documentId,
           userId: document.userId,
           content: chunk.content,
+          sourceFilename: document.filename,
           chunkIndex: chunk.index,
+          pageNumber: chunk.pageNumber,
           embedding,
         });
 
@@ -67,7 +68,10 @@ export class IndexingService {
 
       await this.prisma.document.update({
         where: { id: documentId },
-        data: { status: DocumentStatus.INDEXED },
+        data: {
+          status: DocumentStatus.INDEXED,
+          indexedAt: new Date(),
+        },
       });
 
       this.logger.log(`Document ${documentId} indexed successfully`);

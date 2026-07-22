@@ -2,9 +2,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { DocumentStatus } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service';
 import { PdfService } from '../pdf/pdf.service';
-import { ChunkingService } from '../chunking/chunking.service';
-import { EmbeddingsService } from '../embeddings/embeddings.service';
-import { VectorStoreService } from '../vector-store/vector-store.service';
+import { IndexingService } from './indexing.service';
 
 @Injectable()
 export class DocumentIndexerService {
@@ -13,9 +11,7 @@ export class DocumentIndexerService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly pdfService: PdfService,
-    private readonly chunkingService: ChunkingService,
-    private readonly embeddingsService: EmbeddingsService,
-    private readonly vectorStoreService: VectorStoreService,
+    private readonly indexingService: IndexingService,
   ) {}
 
   async indexDocument(documentId: string): Promise<void> {
@@ -34,47 +30,9 @@ export class DocumentIndexerService {
       }
 
       const extraction = await this.pdfService.extractTextFromS3(document.s3Key, document.filename);
-      const chunks = this.chunkingService.chunkText(extraction.text);
+      await this.indexingService.indexDocument(documentId, extraction.text);
 
-      const embeddings = await this.embeddingsService.generateEmbeddingsBatch(
-        chunks.map((chunk) => chunk.content),
-      );
-
-      for (let index = 0; index < chunks.length; index += 1) {
-        const chunk = chunks[index];
-        const embedding = embeddings[index];
-
-        const savedChunk = await this.prisma.chunk.create({
-          data: {
-            documentId,
-            content: chunk.content,
-            chunkIndex: chunk.index,
-          },
-        });
-
-        await this.vectorStoreService.saveEmbedding({
-          id: savedChunk.id,
-          content: chunk.content,
-          documentId,
-          userId: document.userId,
-          chunkIndex: chunk.index,
-          embedding,
-          metadata: {
-            source: document.filename,
-            pageNumber: chunk.pageNumber ?? 1,
-          },
-        });
-      }
-
-      await this.prisma.document.update({
-        where: { id: documentId },
-        data: {
-          status: DocumentStatus.INDEXED,
-          indexedAt: new Date(),
-        },
-      });
-
-      this.logger.log(`Document ${documentId} indexed successfully`);
+      this.logger.log(`Document ${documentId} extracted and indexed successfully`);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(`Failed to index document ${documentId}`, message);

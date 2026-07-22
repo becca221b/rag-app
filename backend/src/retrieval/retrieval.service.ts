@@ -8,6 +8,8 @@ export interface RetrievedChunk {
   chunkIndex: number;
   documentId: string;
   userId: string;
+  sourceFilename?: string;
+  pageNumber?: number;
   score?: number;
 }
 
@@ -38,6 +40,8 @@ export class RetrievalService {
       chunkIndex: hit.chunkIndex,
       documentId: hit.documentId,
       userId: hit.userId,
+      sourceFilename: hit.sourceFilename,
+      pageNumber: hit.pageNumber,
       score: hit.score,
     }));
   }

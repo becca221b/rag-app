@@ -3,7 +3,7 @@ import { DocumentStatus } from '@prisma/client';
 import { DocumentIndexerService } from './document-indexer.service';
 
 describe('DocumentIndexerService', () => {
-  it('indexes a document through pdf extraction, chunking, embeddings, and vector storage', async () => {
+  it('extracts the PDF and delegates indexing to the application service', async () => {
     const prisma = {
       document: {
         findUnique: jest.fn(async () => ({
@@ -23,39 +23,19 @@ describe('DocumentIndexerService', () => {
       extractTextFromS3: jest.fn(async () => ({ text: 'hello world', pageCount: 1, filename: 'file.pdf' })) as jest.Mock,
     };
 
-    const chunkingService = {
-      chunkText: jest.fn(() => [{ content: 'hello world', index: 0, position: 0 }]) as jest.Mock,
-    };
-
-    const embeddingsService = {
-      generateEmbeddingsBatch: jest.fn(async () => [[0.1, 0.2, 0.3]]) as jest.Mock,
-    };
-
-    const vectorStoreService = {
-      saveEmbedding: jest.fn(async () => undefined) as jest.Mock,
+    const indexingService = {
+      indexDocument: jest.fn(async () => undefined) as jest.Mock,
     };
 
     const service = new DocumentIndexerService(
       prisma as any,
       pdfService as any,
-      chunkingService as any,
-      embeddingsService as any,
-      vectorStoreService as any,
+      indexingService as any,
     );
 
     await service.indexDocument('doc-1');
 
     expect(pdfService.extractTextFromS3).toHaveBeenCalledWith('docs/file.pdf', 'file.pdf');
-    expect(chunkingService.chunkText).toHaveBeenCalledWith('hello world');
-    expect(embeddingsService.generateEmbeddingsBatch).toHaveBeenCalled();
-    expect(vectorStoreService.saveEmbedding).toHaveBeenCalled();
-    expect(vectorStoreService.saveEmbedding).toHaveBeenCalledWith(
-      expect.objectContaining({ userId: 'user-1' }),
-    );
-    expect(prisma.document.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({ status: DocumentStatus.INDEXED }),
-      }),
-    );
+    expect(indexingService.indexDocument).toHaveBeenCalledWith('doc-1', 'hello world');
   });
 });

@@ -7,17 +7,15 @@ import { ChunkingModule } from '../chunking/chunking.module';
 import { DatabaseModule } from '../database/database.module';
 import { OpenSearchModule } from '../opensearch/opensearch.module';
 import { PdfModule } from '../pdf/pdf.module';
-import { VectorStoreModule } from '../vector-store/vector-store.module';
 
 @Module({
   imports: [
     ConfigModule,
     EmbeddingsModule,
     ChunkingModule,
-    DatabaseModule,     
+    DatabaseModule,
     OpenSearchModule,
     PdfModule,
-    VectorStoreModule,
   ],
   providers: [IndexingService, DocumentIndexerService],
   exports: [IndexingService, DocumentIndexerService],

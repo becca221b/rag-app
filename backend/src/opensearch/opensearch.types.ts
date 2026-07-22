@@ -5,7 +5,9 @@ export interface IndexChunkPayload {
   documentId: string;
   userId: string;
   content: string;
+  sourceFilename: string;
   chunkIndex: number;
+  pageNumber?: number;
   embedding: number[];
 }
 
@@ -15,7 +17,9 @@ export interface OpenSearchSearchHit {
   chunkIndex: number;
   documentId: string;
   userId: string;
+  sourceFilename?: string;
   score?: number;
+  pageNumber?: number;
 }
 
 export interface OpenSearchSearchResponse {
@@ -33,6 +37,8 @@ export interface OpenSearchHitItem {
     chunkIndex: number;
     documentId: string;
     userId: string;
+    sourceFilename?: string;
+    pageNumber?: number;
   };
   _score?: number;
 }

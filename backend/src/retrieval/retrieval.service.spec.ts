@@ -14,7 +14,9 @@ describe('RetrievalService', () => {
           content: 'Second chunk',
           documentId: 'doc-1',
           userId: 'user-1',
+          sourceFilename: 'handbook.pdf',
           chunkIndex: 1,
+          pageNumber: 3,
           score: 0.8,
         },
         {
@@ -22,6 +24,7 @@ describe('RetrievalService', () => {
           content: 'First chunk',
           documentId: 'doc-1',
           userId: 'user-1',
+          sourceFilename: 'handbook.pdf',
           chunkIndex: 0,
           score: 0.95,
         },
@@ -43,5 +46,9 @@ describe('RetrievalService', () => {
     const secondScore = result[1].score ?? 0;
 
     expect(firstScore).toBeGreaterThan(secondScore);
+    expect(result[1]).toEqual(expect.objectContaining({
+      sourceFilename: 'handbook.pdf',
+      pageNumber: 3,
+    }));
   });
 });

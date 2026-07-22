@@ -25,9 +25,12 @@ export interface DocumentItem {
 }
 
 export interface Source {
+  id?: string
   content: string
   documentId?: string
+  sourceFilename?: string
   chunkIndex?: number
+  pageNumber?: number
   score?: number
 }
 

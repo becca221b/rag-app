@@ -7,7 +7,9 @@ describe('OpenSearchService', () => {
   let service: OpenSearchService;
   let client: {
     indices: {
+      exists: jest.Mock;
       create: jest.Mock;
+      putMapping: jest.Mock;
     };
     index: jest.Mock;
     delete: jest.Mock;
@@ -17,7 +19,9 @@ describe('OpenSearchService', () => {
   beforeEach(async () => {
     client = {
       indices: {
+        exists: jest.fn().mockResolvedValue({ body: true }),
         create: jest.fn().mockResolvedValue({ statusCode: 200 }),
+        putMapping: jest.fn().mockResolvedValue({ statusCode: 200 }),
       },
       index: jest.fn().mockResolvedValue({ statusCode: 200 }),
       delete: jest.fn().mockResolvedValue({ statusCode: 200 }),
@@ -50,6 +54,10 @@ describe('OpenSearchService', () => {
         {
           provide: ConfigService,
           useValue: {
+            get: jest.fn((key: string) => {
+              if (key === 'embeddings.dimension') return 1536;
+              return undefined;
+            }),
             getOrThrow: jest.fn((key: string) => {
               if (key === 'opensearch.index') {
                 return 'document-chunks';
@@ -77,7 +85,9 @@ describe('OpenSearchService', () => {
     await service.indexChunk({
       id: 'chunk-1',
       documentId: 'doc-1',
+      userId: 'user-1',
       content: 'hello world',
+      sourceFilename: 'handbook.pdf',
       chunkIndex: 0,
       embedding: [0.1, 0.2, 0.3],
     });
@@ -89,8 +99,25 @@ describe('OpenSearchService', () => {
         body: expect.objectContaining({
           content: 'hello world',
           documentId: 'doc-1',
+          userId: 'user-1',
+          sourceFilename: 'handbook.pdf',
         }),
       }),
     );
+  });
+
+  it('ensures user isolation mapping exists for an existing index', async () => {
+    await service.onModuleInit();
+
+    expect(client.indices.putMapping).toHaveBeenCalledWith({
+      index: 'document-chunks',
+      body: {
+        properties: {
+          userId: { type: 'keyword' },
+          sourceFilename: { type: 'keyword' },
+          pageNumber: { type: 'integer' },
+        },
+      },
+    });
   });
 });

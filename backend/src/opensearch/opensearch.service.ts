@@ -1,14 +1,15 @@
-import { Inject, Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
+import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Client } from '@opensearch-project/opensearch';
 import { OPENSEARCH_CLIENT, IndexChunkPayload, OpenSearchSearchHit, OpenSearchQuery, OpenSearchHitItem } from './opensearch.types';
 
 @Injectable()
-export class OpenSearchService {
+export class OpenSearchService implements OnModuleInit {
   private readonly logger = new Logger(OpenSearchService.name);
   private readonly indexName: string;
   private readonly maxRetries: number;
   private readonly retryDelay: number;
+  private readonly embeddingDimension: number;
 
   constructor(
     @Inject(OPENSEARCH_CLIENT) private readonly client: Client,
@@ -17,6 +18,67 @@ export class OpenSearchService {
     this.indexName = this.configService.getOrThrow<string>('opensearch.index');
     this.maxRetries = this.configService.get<number>('opensearch.maxRetries') || 3;
     this.retryDelay = this.configService.get<number>('opensearch.retryDelay') || 1000;
+    this.embeddingDimension = this.configService.get<number>('embeddings.dimension') || 1536;
+  }
+
+  async onModuleInit(): Promise<void> {
+    await this.ensureIndex();
+  }
+
+  private async ensureIndex(): Promise<void> {
+    const exists = await this.client.indices.exists({ index: this.indexName });
+
+    if (exists.body) {
+      await this.client.indices.putMapping({
+        index: this.indexName,
+        body: {
+          properties: {
+            userId: { type: 'keyword' },
+            sourceFilename: { type: 'keyword' },
+            pageNumber: { type: 'integer' },
+          },
+        },
+      });
+      this.logger.log(`Index ${this.indexName} already exists`);
+      return;
+    }
+
+    await this.client.indices.create({
+      index: this.indexName,
+      body: {
+        settings: {
+          index: {
+            knn: true,
+            'knn.algo_param.ef_search': 100,
+          },
+        },
+        mappings: {
+          properties: {
+            content: { type: 'text' },
+            documentId: { type: 'keyword' },
+            userId: { type: 'keyword' },
+            sourceFilename: { type: 'keyword' },
+            chunkIndex: { type: 'integer' },
+            pageNumber: { type: 'integer' },
+            embedding: {
+              type: 'knn_vector',
+              dimension: this.embeddingDimension,
+              method: {
+                name: 'hnsw',
+                space_type: 'cosinesimil',
+                engine: 'nmslib',
+                parameters: {
+                  ef_construction: 100,
+                  m: 16,
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    this.logger.log(`Created index ${this.indexName}`);
   }
 
   private async withRetry<T>(
@@ -59,7 +121,9 @@ export class OpenSearchService {
           chunkIndex: payload.chunkIndex,
           documentId: payload.documentId,
           userId: payload.userId,
+          sourceFilename: payload.sourceFilename,
           embedding: payload.embedding,
+          ...(payload.pageNumber !== undefined ? { pageNumber: payload.pageNumber } : {}),
         },
       });
 
@@ -121,6 +185,8 @@ export class OpenSearchService {
           chunkIndex: item._source?.chunkIndex,
           documentId: item._source?.documentId,
           userId: item._source?.userId,
+          sourceFilename: item._source?.sourceFilename,
+          pageNumber: item._source?.pageNumber,
           score: item._score,
         };
       });

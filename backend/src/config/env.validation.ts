@@ -63,6 +63,10 @@ export class EnvironmentVariables {
   })
   @IsBoolean()
   OPENSEARCH_REJECT_UNAUTHORIZED?: boolean;
+
+  @IsOptional()
+  @IsNumber()
+  EMBEDDING_DIMENSION?: number;
 }
 
 export function validate(config: Record<string, unknown>) {

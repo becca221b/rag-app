@@ -78,7 +78,7 @@ export function MessageItem({
                     key={i}
                     source={source}
                     index={i}
-                    docName={resolveDocName(source.documentId)}
+                    docName={source.sourceFilename || resolveDocName(source.documentId)}
                   />
                 ))}
               </div>
