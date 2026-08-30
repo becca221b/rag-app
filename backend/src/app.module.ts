@@ -15,6 +15,7 @@ import { RetrievalModule } from './retrieval/retrieval.module';
 import { GenerationModule } from './generation/generation.module';
 import { ChatModule } from './chat/chat.module';
 import { AwsModule } from './aws/aws.module';
+import { OpenSearchModule } from './opensearch/opensearch.module';
 import configuration from './config/configuration';
 import { validate } from './config/env.validation';
 
@@ -38,6 +39,7 @@ import { validate } from './config/env.validation';
     GenerationModule,
     ChatModule,
     AwsModule,
+    OpenSearchModule,
   ],
   controllers: [AppController],
   providers: [AppService],

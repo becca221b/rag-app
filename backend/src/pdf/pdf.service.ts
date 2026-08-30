@@ -4,7 +4,7 @@ import { Inject } from '@nestjs/common';
 import { S3_CLIENT } from '../aws/aws.constants';
 import { ConfigService } from '@nestjs/config';
 
-const { PDFParse } = require('pdf-parse');
+import { PDFParse } from 'pdf-parse';
 
 export interface PdfExtractionResult {
   text: string;
@@ -45,12 +45,13 @@ export class PdfService {
         ? body
         : Buffer.from(await body.transformToByteArray());
 
-      const parser = new PDFParse();
-      const parsedPdf = await parser.parse(pdfBuffer);
+      const parser = new PDFParse({ data: pdfBuffer });
+
+      const parsedPdf = await parser.getText();
 
       return {
         text: parsedPdf.text ?? '',
-        pageCount: parsedPdf.numpages ?? 0,
+        pageCount: parsedPdf.total ?? 0,
         filename,
       };
     } catch (error) {

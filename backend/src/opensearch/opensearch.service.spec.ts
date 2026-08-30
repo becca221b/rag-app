@@ -55,7 +55,7 @@ describe('OpenSearchService', () => {
           provide: ConfigService,
           useValue: {
             get: jest.fn((key: string) => {
-              if (key === 'embeddings.dimension') return 1536;
+              if (key === 'embeddings.dimension') return 1024;
               return undefined;
             }),
             getOrThrow: jest.fn((key: string) => {

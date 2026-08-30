@@ -44,14 +44,6 @@ export class EnvironmentVariables {
 
   @IsString()
   @IsNotEmpty()
-  OPENSEARCH_USERNAME: string;
-
-  @IsString()
-  @IsNotEmpty()
-  OPENSEARCH_PASSWORD: string;
-
-  @IsString()
-  @IsNotEmpty()
   OPENSEARCH_INDEX: string;
 
   @IsOptional()

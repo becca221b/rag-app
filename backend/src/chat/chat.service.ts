@@ -16,7 +16,12 @@ export class ChatService {
     const relevantChunks = await this.retrievalService.retrieveRelevantChunks(query, userId, 5);
     const context = relevantChunks.map((chunk) => String(chunk.content ?? ''));
 
-    const response = await this.generationService.generateResponse(query, context);
+    let response: string;
+    if (context.length === 0) {
+      response = 'No se encontró información relevante en los documentos cargados para responder a tu pregunta.';
+    } else {
+      response = await this.generationService.generateResponse(query, context);
+    }
 
     let session;
     if (sessionId) {

@@ -6,7 +6,7 @@ describe('GenerationService', () => {
     const bedrockClient = {
       send: jest.fn(async () => ({
         body: new TextEncoder().encode(JSON.stringify({
-          content: [{ text: 'Answer from context' }],
+          choices: [{ message: { content: 'Answer from context' } }],
         })),
       })),
     };
