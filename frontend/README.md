@@ -70,7 +70,15 @@ npm test
 
 ## Docker (optional)
 
-There are Docker artifacts at the repository root. To run the full stack with Docker Compose, prefer the root-level `docker-compose.yml` that includes backend and frontend.
+The Docker artifacts live in the `docker/` directory. To run the full stack (postgres, backend, frontend) with Docker Compose, run it from that directory:
+
+```bash
+cd ../docker
+docker-compose up -d
+docker-compose logs -f
+```
+
+The compose file reads `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_S3_BUCKET`, `OPENSEARCH_ENDPOINT`, `OPENSEARCH_USERNAME` and `OPENSEARCH_PASSWORD` from the environment, so create a `.env` in `docker/` with those values first.
 
 ## Manual Quick Test
 
