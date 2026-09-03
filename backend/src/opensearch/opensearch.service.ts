@@ -15,9 +15,9 @@ export class OpenSearchService implements OnModuleInit {
     @Inject(OPENSEARCH_CLIENT) private readonly client: Client,
     private readonly configService: ConfigService,
   ) {
-    this.indexName = this.configService.getOrThrow<string>('opensearch.index');
-    this.maxRetries = this.configService.get<number>('opensearch.maxRetries') || 3;
-    this.retryDelay = this.configService.get<number>('opensearch.retryDelay') || 1000;
+    this.indexName = this.configService.getOrThrow<string>('aws.opensearch.index');
+    this.maxRetries = this.configService.get<number>('aws.opensearch.maxRetries') || 3;
+    this.retryDelay = this.configService.get<number>('aws.opensearch.retryDelay') || 1000;
     this.embeddingDimension = this.configService.get<number>('embeddings.dimension') || 1024;
   }
 

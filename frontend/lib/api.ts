@@ -76,7 +76,10 @@ export const api = {
           body: JSON.stringify({ email, password, name }),
         }),
       () => mock.register(email, password, name),
-    )
+    ).then((res) => ({
+      ...res,
+      token: res.access_token || res.token,
+    }))
   },
 
   async login(email: string, password: string): Promise<AuthResponse> {
@@ -88,7 +91,10 @@ export const api = {
           body: JSON.stringify({ email, password }),
         }),
       () => mock.login(email, password),
-    )
+    ).then((res) => ({
+      ...res,
+      token: res.access_token || res.token,
+    }))
   },
 
   async getDocuments(token: string): Promise<DocumentItem[]> {

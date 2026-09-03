@@ -59,17 +59,11 @@ describe('OpenSearchService', () => {
               return undefined;
             }),
             getOrThrow: jest.fn((key: string) => {
-              if (key === 'opensearch.index') {
-                return 'document-chunks';
+              if (key === 'aws.opensearch.index') {
+                return 'rag-vectors';
               }
-              if (key === 'opensearch.node') {
+              if (key === 'aws.opensearch.node') {
                 return 'http://localhost:9200';
-              }
-              if (key === 'opensearch.username') {
-                return 'admin';
-              }
-              if (key === 'opensearch.password') {
-                return 'admin';
               }
               return '';
             }),

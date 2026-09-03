@@ -7,22 +7,6 @@ export default () => ({
     secret: process.env.JWT_SECRET,
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',
   },
-  opensearch: {
-  node: process.env.OPENSEARCH_NODE ?? '',
-  index:
-    process.env.OPENSEARCH_INDEX ??
-    'document-chunks-v2',
-
-  maxRetries: parseInt(
-    process.env.OPENSEARCH_MAX_RETRIES ?? '3',
-    10,
-  ),
-
-  retryDelay: parseInt(
-    process.env.OPENSEARCH_RETRY_DELAY ?? '1000',
-    10,
-  ),
-  },
   aws: {
     region: process.env.AWS_REGION ?? 'us-east-1',
     accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? '',
@@ -37,9 +21,9 @@ export default () => ({
     },
     opensearch: {
       node: process.env.OPENSEARCH_NODE ?? '',
-      username: process.env.OPENSEARCH_USERNAME ?? '',
-      password: process.env.OPENSEARCH_PASSWORD ?? '',
-      index: process.env.OPENSEARCH_INDEX ?? 'document-chunks-v2',
+      index: process.env.OPENSEARCH_INDEX ?? 'rag-vectors',
+      maxRetries: parseInt(process.env.OPENSEARCH_MAX_RETRIES ?? '3', 10),
+      retryDelay: parseInt(process.env.OPENSEARCH_RETRY_DELAY ?? '1000', 10),
     },
   },
   rag: {

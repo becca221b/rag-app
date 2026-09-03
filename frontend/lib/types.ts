@@ -9,7 +9,8 @@ export interface User {
 
 export interface AuthResponse {
   user: User
-  token: string
+  token?: string
+  access_token?: string
 }
 
 export interface DocumentItem {

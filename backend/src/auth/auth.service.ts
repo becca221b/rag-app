@@ -20,14 +20,14 @@ export class AuthService {
       },
     });
 
-    const token = this.generateToken(user.id, user.email);
+    const access_token = this.generateToken(user.id, user.email);
     return {
+      access_token,
       user: {
         id: user.id,
         email: user.email,
         name: user.name,
       },
-      token,
     };
   }
 
@@ -45,14 +45,14 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const token = this.generateToken(user.id, user.email);
+    const access_token = this.generateToken(user.id, user.email);
     return {
+      access_token,
       user: {
         id: user.id,
         email: user.email,
         name: user.name,
       },
-      token,
     };
   }
 

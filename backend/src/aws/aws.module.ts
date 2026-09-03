@@ -76,7 +76,7 @@ import {
       useFactory: (configService: ConfigService) => {
         const node =
           configService.getOrThrow<string>(
-            'opensearch.node',
+            'aws.opensearch.node',
           );
 
         const region =
